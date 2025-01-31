@@ -1,0 +1,14 @@
+/* 오목판 스타일 */
+.board {
+    border-collapse: collapse;  /* 테이블 셀 간격 없애기 */
+    margin: 20px auto; /* 가운데 정렬 */
+    table-layout: fixed;  /* 테이블 칸 크기 고정 */
+}
+
+.board td {
+    width: 40px;  /* 각 칸의 너비 */
+    height: 40px; /* 각 칸의 높이 */
+    border: 1px solid #999;  /* 칸의 테두리 */
+    background-color: #f9f9f9; /* 빈 칸 배경색 (빈 오목판) */
+    cursor: pointer; /* 클릭할 수 있다는 표시 */
+}
