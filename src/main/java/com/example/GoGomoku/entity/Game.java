@@ -37,7 +37,8 @@ public class Game {
     @Column(name = "winner_session_id")
     private String winnerSessionId;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private GameStatus status;
 
     @OneToMany(mappedBy = "game")
     private List<Stone> stones;
