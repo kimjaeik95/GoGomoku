@@ -1,5 +1,8 @@
 package com.example.GoGomoku.dto;
 
+import com.example.GoGomoku.entity.Color;
+import com.example.GoGomoku.entity.Stone;
+
 /**
  * packageName    : com.example.GoGomoku.dto
  * fileName       : StoneRequest
@@ -17,4 +20,12 @@ public record StoneRequest(
         String color,
         String sessionId
 ) {
+    public Stone toStoneEntity() {
+        return Stone.builder()
+                .x(x)
+                .y(y)
+                .color(Color.valueOf(color))
+                .sessionId(sessionId)
+                .build();
+    }
 }

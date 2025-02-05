@@ -2,6 +2,7 @@ package com.example.GoGomoku.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,6 +20,7 @@ import java.time.Instant;
  * 2/1/25       JAEIK       최초 생성
  */
 @Getter
+@Builder
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor

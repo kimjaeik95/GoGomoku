@@ -1,10 +1,13 @@
 package com.example.GoGomoku.controller;
 
+import com.example.GoGomoku.dto.StoneRequest;
 import com.example.GoGomoku.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -30,5 +33,11 @@ public class BoardController {
         int[][] board = boardService.createBoard();
         model.addAttribute("board", board);
         return "/board/board";
+    }
+
+    @PostMapping("/board/stone")
+    public String saveStone(@ModelAttribute StoneRequest stoneRequest) {
+        boardService.createStone(stoneRequest);
+        return "";
     }
 }
