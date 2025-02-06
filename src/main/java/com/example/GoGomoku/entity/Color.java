@@ -12,6 +12,7 @@ package com.example.GoGomoku.entity;
  * 2/1/25       JAEIK       최초 생성
  */
 public enum Color {
+    EMPTY,
     BLACK,
     WHITE
 }

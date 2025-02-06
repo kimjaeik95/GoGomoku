@@ -1,6 +1,7 @@
 package com.example.GoGomoku.controller;
 
 import com.example.GoGomoku.dto.StoneRequest;
+import com.example.GoGomoku.entity.Color;
 import com.example.GoGomoku.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -30,7 +31,7 @@ public class BoardController {
 
     @GetMapping("/board")
     public String newBoard(Model model) {
-        int[][] board = boardService.createBoard();
+        Color[][] board = boardService.createBoard();
         model.addAttribute("board", board);
         return "/board/board";
     }

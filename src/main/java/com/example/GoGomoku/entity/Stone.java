@@ -49,3 +49,4 @@ public class Stone {
     @Column(name = "create_at")
     private Instant createdAt;
 }
+
