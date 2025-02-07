@@ -4,6 +4,7 @@ import com.example.GoGomoku.dto.StoneRequest;
 import com.example.GoGomoku.entity.Color;
 import com.example.GoGomoku.service.BoardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,8 +38,8 @@ public class BoardController {
     }
 
     @PostMapping("/board/stone")
-    public String saveStone(@ModelAttribute StoneRequest stoneRequest) {
-        boardService.createStone(stoneRequest);
+    public String saveStone(@ModelAttribute StoneRequest stoneRequest, @Param("gameId") Long gameId) {
+        boardService.createStone(stoneRequest,gameId);
         return "";
     }
 }

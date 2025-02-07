@@ -6,6 +6,7 @@ import com.example.GoGomoku.entity.Color;
 import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.GameStatus;
 import com.example.GoGomoku.entity.Stone;
+import com.example.GoGomoku.repository.GameRepository;
 import com.example.GoGomoku.repository.StoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardService {
     private final StoneRepository stoneRepository;
+    private final GameRepository gameRepository;
 
     private Color[][] board;
 
@@ -48,20 +50,30 @@ public class BoardService {
      체크해야할 부분 private 메서드를 분리해서 만들고,
      오목알 생성 로직에서 메서드 호출해야할듯? (돌을 넣고 5개가 되자마자 게임종료가되니)
      */
-    public void createStone(StoneRequest stoneRequest) {
+    public void createStone(StoneRequest stoneRequest, Long gameId) {
+        Game game = gameRepository.findById(gameId)
+                        .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
+
         stoneValidPosition(stoneRequest.x(),stoneRequest.y());
+        // 게임에서 마지막 돌을 찾는다.
+        int latestTurn = stoneRepository.findLatestTurnGameId(gameId);
 
-        Stone stone = stoneRequest.toStoneEntity();
+        // 돌을생성할때마다 turn 증가
+        int newTurn = latestTurn + 1;
 
-        if (stone.getTurn() % 2 == 0) {  // 5 가 나머지가 0이면 짝수 , 1 이면 짝수
+        Stone stone = stoneRequest.toStoneEntity(game, newTurn);
+
+        // 홀짝 턴 검
+        if (newTurn % 2 == 0) {
             if (!stoneRequest.color().equals("WHITE")) {
-                throw new IllegalArgumentException("홀수턴에 화이트 돌이 올 수 없다.");
+                throw new IllegalArgumentException("짝수턴에 화이트 돌만 와야 합니다.");
             }
         } else {
             if (!stoneRequest.color().equals("BLACK")) {
-                throw new IllegalArgumentException("짝수턴에 블랙 돌이 올 수 없다.");
+                throw new IllegalArgumentException("홀수턴에는 블랙 돌만 와야 합니다.");
             }
         }
+
         stoneRepository.save(stone);
     }
 
@@ -73,3 +85,4 @@ public class BoardService {
         }
     }
 }
+

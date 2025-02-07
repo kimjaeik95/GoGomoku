@@ -1,6 +1,7 @@
 package com.example.GoGomoku.dto;
 
 import com.example.GoGomoku.entity.Color;
+import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.Stone;
 
 /**
@@ -20,11 +21,13 @@ public record StoneRequest(
         String color,
         String sessionId
 ) {
-    public Stone toStoneEntity() {
+    public Stone toStoneEntity(Game game, int newTurn) {
         return Stone.builder()
+                .game(game)
                 .x(x)
                 .y(y)
                 .color(Color.valueOf(color))
+                .turn(newTurn)
                 .sessionId(sessionId)
                 .build();
     }
