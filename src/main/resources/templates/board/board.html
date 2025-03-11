@@ -1,22 +1,61 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>오목판</title>
-    <link rel="stylesheet" type="text/css" href="/board.style.css">
-</head>
-<body>
-<table class="board">
-    <tbody>
-    <!-- 2차원 배열 'board'의 각 행을 반복 -->
-    <tr th:each="row : ${board}">
-        <!-- 각 행의 각 칸을 반복 -->
-        <td th:each="cell : ${row}" th:text="${cell == 0 ? '' : ''}"></td>
-    </tr>
-    </tbody>
-</table>
-</body>
+    <link rel="stylesheet" type="text/css" href="/board.style.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- jQuery 사용 -->
+  </head>
+  <body>
+    <table class="board">
+      <tbody>
+        <!-- 2차원 배열 'board'의 각 행을 반복 -->
+        <tr th:each="row : ${board}">
+          <!-- 각 행의 각 칸을 반복 -->
+
+          <td
+            th:each="cell : ${row}"
+            th:text="${cell == 1 ? '●' : (cell == 2 ? '○' : '')}"
+            th:class="${cell == 1 ? 'black' : (cell == 2 ? 'white' : '')}"
+            th:data-session-id="${sessionId}"
+            th:data-cell-color="${cell == 1 ? 'black' : 'white'}"
+            th:onclick="|placeStone(this, '${cell == 1 ? 'black' : 'white'}')|"
+          >
+            <!-- 클릭 시 color만 전달 -->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script>
+      function placeStone(td, gameId, color) {
+        var x = $(td).closest("tr").index();
+        var y = $(td).index();
+        var sessionId = $(td).data("session-id");
+
+        var stoneRequest = {
+          x: x,
+          y: y,
+          color: color,
+          sessionId: sessionId,
+        };
+
+        $.ajax({
+          url: "/board/stone",
+          method: "POST",
+          data: stoneRequest,
+          success: function (response) {
+            alert("돌울 두었습니다.");
+            location.reload();
+          },
+        });
+      }
+    </script>
+  </body>
 </html>

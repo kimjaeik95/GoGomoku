@@ -2,15 +2,14 @@ package com.example.GoGomoku.controller;
 
 import com.example.GoGomoku.dto.StoneRequest;
 import com.example.GoGomoku.entity.Color;
+import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.service.BoardService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * packageName    : com.example.GoGomoku.controller
@@ -32,14 +31,14 @@ public class BoardController {
 
     @GetMapping("/board")
     public String newBoard(Model model) {
-        Color[][] board = boardService.createBoard();
+        Stone[][] board = boardService.createBoard();
         model.addAttribute("board", board);
         return "/board/board";
     }
 
     @PostMapping("/board/stone")
-    public String saveStone(@ModelAttribute StoneRequest stoneRequest, @Param("gameId") Long gameId) {
-        boardService.createStone(stoneRequest,gameId);
-        return "";
+    public String saveStone(@RequestBody StoneRequest stoneRequest, @RequestParam("gameId") Long gameId, HttpSession session) {
+        boardService.createStone(stoneRequest, gameId, session);
+        return "redirect:/board?gameId=" + gameId;
     }
 }

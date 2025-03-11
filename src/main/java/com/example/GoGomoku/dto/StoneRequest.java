@@ -3,6 +3,7 @@ package com.example.GoGomoku.dto;
 import com.example.GoGomoku.entity.Color;
 import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.Stone;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * packageName    : com.example.GoGomoku.dto
@@ -21,7 +22,7 @@ public record StoneRequest(
         String color,
         String sessionId
 ) {
-    public Stone toStoneEntity(Game game, int newTurn) {
+    public Stone toStoneEntity(Game game, int newTurn, String sessionId) {
         return Stone.builder()
                 .game(game)
                 .x(x)
