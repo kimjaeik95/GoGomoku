@@ -78,16 +78,27 @@ public class BoardService {
     }
 
 
-
-
     // 돌의 위치 유효성 검사
     private void stoneValidPosition(int x, int y) {
         if (board[x][y] != null) {
             throw new IllegalArgumentException("이 위치에 돌이 있습니다.");
         }
     }
-    // 무승부 조건 확인 메소드 (오목판이 가득차면 드로우)
+
     // 블랙 3+3
+
+    // 무승부 조건 확인 메소드 (오목판이 가득차면 드로우)
+    private boolean checkDrawStone(Stone stone) {
+        for (int i = 0; i <board.length; i++) { // 행탐색
+            for (int j = 0; j <board[i].length; j++) { // i행의 전체열 탐색
+                if (board[i][j] == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     // 승리 조건 확인 메소드
     private boolean checkWinStone(Stone stone) {
         return checkStoneFiveCount(stone, 1, 0) || // x축 아래방향 승리
@@ -126,7 +137,7 @@ public class BoardService {
         }
         for (int i = 1; i <= 4; i++) {
             int nextX = x - i * dx;
-            int nextY = y = i * dy;
+            int nextY = y - i * dy;
 
             if (nextX < 0 || nextX >= 15 || nextY < 0 || nextY >= 15
                     || board[nextX][nextY] == null
