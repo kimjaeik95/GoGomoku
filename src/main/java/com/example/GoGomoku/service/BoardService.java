@@ -1,10 +1,8 @@
 package com.example.GoGomoku.service;
 
-import com.example.GoGomoku.dto.GameResponse;
+
 import com.example.GoGomoku.dto.StoneRequest;
-import com.example.GoGomoku.entity.;
 import com.example.GoGomoku.entity.Game;
-import com.example.GoGomoku.entity.GameStatus;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.repository.GameRepository;
 import com.example.GoGomoku.repository.StoneRepository;
@@ -12,7 +10,6 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 
 /**
@@ -50,7 +47,7 @@ public class BoardService {
      */
     public void createStone(StoneRequest stoneRequest, Long gameId, HttpSession session) {
         Game game = gameRepository.findById(gameId)
-                        .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
 
         // 로그인 기능이 없으므로 sessionId로 흑/백 사용자 저장
         String sessionId = session.getId();
@@ -59,7 +56,7 @@ public class BoardService {
         // 돌을생성할때마다 turn 증가
         int newTurn = latestTurn + 1;
         // x,y 공간확인
-        stoneValidPosition(stoneRequest.x(),stoneRequest.y());
+        stoneValidPosition(stoneRequest.x(), stoneRequest.y());
         // 엔 -Dto 변환
         Stone stone = stoneRequest.toStoneEntity(game, newTurn, sessionId);
 
@@ -81,32 +78,41 @@ public class BoardService {
     }
 
 
+
+
     // 돌의 위치 유효성 검사
     private void stoneValidPosition(int x, int y) {
         if (board[x][y] != null) {
             throw new IllegalArgumentException("이 위치에 돌이 있습니다.");
         }
     }
-
-    // 무승부 조건 확인 메소드
+    // 무승부 조건 확인 메소드 (오목판이 가득차면 드로우)
     // 블랙 3+3
-    // 승리 조건 확인 메소드 (가로,세로,대각선2개)
-
-
+    // 승리 조건 확인 메소드
+    private boolean checkWinStone(Stone stone) {
+        return checkStoneFiveCount(stone, 1, 0) || // x축 아래방향 승리
+                checkStoneFiveCount(stone, -1, 0) || // x축 위방향 승리
+                checkStoneFiveCount(stone, 0, 1) || // 오른쪽열(y)승리
+                checkStoneFiveCount(stone, 0, -1) || // 왼쪽열(y)승리
+                checkStoneFiveCount(stone, 1, 1) || // ↘ (오른쪽 아래 대각선)
+                checkStoneFiveCount(stone, -1, -1) || // ↖ (왼쪽 위 대각선)
+                checkStoneFiveCount(stone, 1, -1) || // ↙ (왼쪽 아래 대각선)
+                checkStoneFiveCount(stone, -1, 1); // ↗ (오른쪽 위 대각선)
+    }
     /* 연속된 돌이 5개인지 확인하는 메소드
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  2차원배열 탐색
-    dx = 1, dy = 0  오른쪽(양의 x축 방향)으로 이동하려면 newX 값을 +1씩 증가시키고,
-    왼쪽(음의 x축 방향)으로 이동하려면 newX 값을 -1씩 감소
+    dx = 1, dy = 0  아래( x축 세로방향)으로 이동하려면 newX 값을 +1씩 증가시킨다,
+    왼쪽(음의 y축 왼쪽방향)으로 이동하려면 newY 값을 -1씩 감소
     dx와 dy를 이용해 현재 위치(x, y)에서 이동할 위치 (newX, newY)를 계산
     탐색후 count = 5
     */
-    private boolean checkStoneFiveCount(Stone stone,int dx, int dy) {
+    private boolean checkStoneFiveCount(Stone stone, int dx, int dy) {
         int count = 1;
         int x = stone.getX();
         int y = stone.getY();
 
-        for (int i =1; i<=4; i++) {
+        for (int i = 1; i <= 4; i++) {
             int nextX = x + i * dx;  // 1 + 1 * 1
             int nextY = y + i * dy;  // 1 + 1 * 1
 
@@ -118,11 +124,11 @@ public class BoardService {
                 count++;
             }
         }
-        for (int i =1; i<=4; i++) {
+        for (int i = 1; i <= 4; i++) {
             int nextX = x - i * dx;
             int nextY = y = i * dy;
 
-            if (nextX <0 || nextX >=15 || nextY <0 || nextY >= 15
+            if (nextX < 0 || nextX >= 15 || nextY < 0 || nextY >= 15
                     || board[nextX][nextY] == null
                     || !board[nextX][nextY].getColor().equals(stone.getColor())) {
                 break;
