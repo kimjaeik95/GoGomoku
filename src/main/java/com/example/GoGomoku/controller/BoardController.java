@@ -9,6 +9,7 @@ import com.example.GoGomoku.service.BoardService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -31,18 +32,18 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    @GetMapping("/show/game")
+    @GetMapping("/game/start/view")
     public String showGameStart() {
-        return "/board/show_game";
+        return "/board/show_start_game";
     }
 
-    @PostMapping("/create/game")
+    @PostMapping("/game/start")
     public String newGame() {
         boardService.createGame();
-        return "redirect:/board/board";
+        return "redirect:/api/game/board/view";
     }
 
-    @GetMapping("/board")
+    @GetMapping("/game/board/view")
     public String newBoard(Model model) {
         Stone[][] board = boardService.createBoard();
         model.addAttribute("board", board);
@@ -50,8 +51,8 @@ public class BoardController {
     }
 
     @PostMapping("/board/stone")
-    public String saveStone(@RequestBody StoneRequest stoneRequest, @RequestParam("gameId") Long gameId, HttpSession session) {
+    public ResponseEntity<?> saveStone(@RequestBody StoneRequest stoneRequest, @RequestParam("gameId") Long gameId, HttpSession session) {
         boardService.createStone(stoneRequest, gameId, session);
-        return "redirect:/board?gameId=" + gameId;
+        return ResponseEntity.ok("오목돌을 생성했습니다.");
     }
 }

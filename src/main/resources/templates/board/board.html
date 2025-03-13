@@ -21,41 +21,10 @@
 
           <td
             th:each="cell : ${row}"
-            th:text="${cell == 1 ? '●' : (cell == 2 ? '○' : '')}"
-            th:class="${cell == 1 ? 'black' : (cell == 2 ? 'white' : '')}"
-            th:data-session-id="${sessionId}"
-            th:data-cell-color="${cell == 1 ? 'black' : 'white'}"
-            th:onclick="|placeStone(this, '${cell == 1 ? 'black' : 'white'}')|"
-          >
-            <!-- 클릭 시 color만 전달 -->
-          </td>
+            th:text="${cell != null ? cell : ' '}"
+          ></td>
         </tr>
       </tbody>
     </table>
-
-    <script>
-      function placeStone(td, gameId, color) {
-        var x = $(td).closest("tr").index();
-        var y = $(td).index();
-        var sessionId = $(td).data("session-id");
-
-        var stoneRequest = {
-          x: x,
-          y: y,
-          color: color,
-          sessionId: sessionId,
-        };
-
-        $.ajax({
-          url: "/board/stone",
-          method: "POST",
-          data: stoneRequest,
-          success: function (response) {
-            alert("돌울 두었습니다.");
-            location.reload();
-          },
-        });
-      }
-    </script>
   </body>
 </html>
