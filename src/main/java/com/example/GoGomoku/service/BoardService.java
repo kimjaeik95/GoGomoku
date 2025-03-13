@@ -31,6 +31,11 @@ public class BoardService {
 
     private Stone[][] board;
 
+    public void createGame() {
+        Game game = new Game();
+        gameRepository.save(game);
+    }
+
     // 빈 오목판 생성
     public Stone[][] createBoard() {
         int size = 15;
@@ -75,6 +80,15 @@ public class BoardService {
         stoneRepository.save(stone);
 
         // 결과 판정 (승리 or 드로우)
+        if (checkWinStone(stone)) {
+            game.updateWinGame(sessionId);
+        } else if (checkDrawStone(stone)) {
+            game.updateDrawGame();
+        } else {
+            game.updateErrorGame();
+        }
+
+        gameRepository.save(game);
     }
 
 

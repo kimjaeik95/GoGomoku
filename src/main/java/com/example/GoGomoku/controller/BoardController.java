@@ -1,7 +1,9 @@
 package com.example.GoGomoku.controller;
 
+import com.example.GoGomoku.dto.GameRequest;
 import com.example.GoGomoku.dto.StoneRequest;
 import com.example.GoGomoku.entity.Color;
+import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.service.BoardService;
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +30,17 @@ import org.springframework.web.bind.annotation.*;
 public class BoardController {
 
     private final BoardService boardService;
+
+    @GetMapping("/show/game")
+    public String showGameStart() {
+        return "/board/show_game";
+    }
+
+    @PostMapping("/create/game")
+    public String newGame() {
+        boardService.createGame();
+        return "redirect:/board/board";
+    }
 
     @GetMapping("/board")
     public String newBoard(Model model) {

@@ -14,5 +14,6 @@ package com.example.GoGomoku.entity;
 public enum GameStatus {
     WIN,
     DRAW,
+    ERROR_GAME_END,
     IN_PROGRESS
 }
