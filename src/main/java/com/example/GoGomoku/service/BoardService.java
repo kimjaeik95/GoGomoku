@@ -31,9 +31,10 @@ public class BoardService {
 
     private Stone[][] board;
 
-    public void createGame() {
+    public Long createGame() {
         Game game = new Game();
         gameRepository.save(game);
+        return game.getId();
     }
 
     // 빈 오목판 생성

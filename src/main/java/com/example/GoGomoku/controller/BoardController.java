@@ -1,14 +1,10 @@
 package com.example.GoGomoku.controller;
 
-import com.example.GoGomoku.dto.GameRequest;
 import com.example.GoGomoku.dto.StoneRequest;
-import com.example.GoGomoku.entity.Color;
-import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.service.BoardService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,13 +34,17 @@ public class BoardController {
     }
 
     @PostMapping("/game/start")
-    public String newGame() {
-        boardService.createGame();
+    public String newGame(HttpSession session) {
+        Long gameId = boardService.createGame();
+        session.setAttribute("gameId", gameId);
         return "redirect:/api/game/board/view";
     }
 
     @GetMapping("/game/board/view")
-    public String newBoard(Model model) {
+    public String newBoard(HttpSession session, Model model) {
+        Long gameId = (Long)session.getAttribute("gameId");
+        model.addAttribute("gameId", gameId);
+
         Stone[][] board = boardService.createBoard();
         model.addAttribute("board", board);
         return "/board/board";
