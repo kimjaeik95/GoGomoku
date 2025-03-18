@@ -5,6 +5,8 @@ import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.Stone;
 import jakarta.servlet.http.HttpSession;
 
+import java.time.Instant;
+
 /**
  * packageName    : com.example.GoGomoku.dto
  * fileName       : StoneRequest
@@ -18,18 +20,17 @@ import jakarta.servlet.http.HttpSession;
  */
 public record StoneRequest(
         Integer x,
-        Integer y,
-        String color,
-        String sessionId
+        Integer y
 ) {
-    public Stone toStoneEntity(Game game, int newTurn, String sessionId) {
+    public Stone toStoneEntity(Game game,Color color, int newTurn, String sessionId) {
         return Stone.builder()
                 .game(game)
                 .x(x)
                 .y(y)
-                .color(Color.valueOf(color))
+                .color(color)
                 .turn(newTurn)
                 .sessionId(sessionId)
+                .createdAt(Instant.now())
                 .build();
     }
 }

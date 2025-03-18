@@ -1,0 +1,23 @@
+/* 교차로 형태의 오목돌 스타일 */
+.stone {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%; /* 둥근 모양 */
+  z-index: 1; /* 돌이 다른 요소 위에 렌더링되도록 설정 */
+  display: block;
+}
+
+/* 검은 돌 */
+.stone.black {
+  background-color: black;
+  border: 3px solid transparent;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* 그림자 추가 */
+}
+
+/* 흰 돌 */
+.stone.white {
+  background-color: white;
+  border: 3px solid transparent;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* 그림자 추가 */
+}

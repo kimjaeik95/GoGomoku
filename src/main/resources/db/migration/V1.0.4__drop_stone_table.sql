@@ -1,0 +1,1 @@
+ALTER TABLE stone DROP CONSTRAINT uq_x_y;

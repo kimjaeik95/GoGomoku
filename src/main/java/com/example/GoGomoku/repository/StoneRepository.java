@@ -21,4 +21,6 @@ import org.springframework.stereotype.Repository;
 public interface StoneRepository extends JpaRepository<Stone, Long> {
     @Query("SELECT COALESCE(MAX(s.turn), 0) FROM Stone s WHERE s.game.id = :gameId")
     int findLatestTurnGameId(@Param("gameId") Long gameId);
+
+    boolean existsByGameIdAndXAndY(Long gameId, int x, int y);
 }

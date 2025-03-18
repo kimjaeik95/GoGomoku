@@ -2,14 +2,16 @@ package com.example.GoGomoku.service;
 
 
 import com.example.GoGomoku.dto.StoneRequest;
+import com.example.GoGomoku.entity.Color;
 import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.repository.GameRepository;
 import com.example.GoGomoku.repository.StoneRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
  * 1/31/25       JAEIK       최초 생성
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BoardService {
     private final StoneRepository stoneRepository;
@@ -51,6 +54,7 @@ public class BoardService {
     3.블랙돌 3+3 규칙예외 메서드
     4.승리시 Game 세션아이디 , 게임상태를 Win 으로 저장해주는로직
      */
+    @Transactional
     public void createStone(StoneRequest stoneRequest, Long gameId, HttpSession session) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
@@ -62,21 +66,19 @@ public class BoardService {
         // 돌을생성할때마다 turn 증가
         int newTurn = latestTurn + 1;
         // x,y 공간확인
-        stoneValidPosition(stoneRequest.x(), stoneRequest.y());
+        stoneValidPosition(gameId, stoneRequest.x(), stoneRequest.y());
+        // 색상 자동 할당 (홀짝 턴에 맞춰서 색상 지정)
+        Color  color = (newTurn % 2 == 0) ? Color.WHITE : Color.BLACK;
         // 엔 -Dto 변환
-        Stone stone = stoneRequest.toStoneEntity(game, newTurn, sessionId);
+        Stone stone = stoneRequest.toStoneEntity(game,color, newTurn, sessionId);
+        log.info("stoneRequest :{}" , stone);
 
         // 홀짝 턴 검사
-        if (newTurn % 2 == 0) {
-            if (!stoneRequest.color().equals("WHITE")) {
-                throw new IllegalArgumentException("짝수턴에 화이트 돌만 와야 합니다.");
-            }
-        } else {
-            if (!stoneRequest.color().equals("BLACK")) {
-                throw new IllegalArgumentException("홀수턴에는 블랙 돌만 와야 합니다.");
-            }
+        if (newTurn % 2 == 0 && stone.getColor().equals("WHITE") && stone.getSessionId().equals(session.getId())) {
+            throw new IllegalArgumentException("짝수턴에 화이트 돌만 와야 합니다.");
+        } else if (newTurn % 2 != 0 && stone.getColor().equals("BLACK") && stone.getSessionId().equals(session.getId())) {
+            throw new IllegalArgumentException("홀수턴에는 블랙 돌만 와야 합니다.");
         }
-
         // 돌 저장
         stoneRepository.save(stone);
 
@@ -94,8 +96,8 @@ public class BoardService {
 
 
     // 돌의 위치 유효성 검사
-    private void stoneValidPosition(int x, int y) {
-        if (board[x][y] != null) {
+    private void stoneValidPosition(Long gameId, int x, int y) {
+        if (stoneRepository.existsByGameIdAndXAndY(gameId,x, y)) {
             throw new IllegalArgumentException("이 위치에 돌이 있습니다.");
         }
     }

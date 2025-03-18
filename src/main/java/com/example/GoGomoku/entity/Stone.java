@@ -46,7 +46,7 @@ public class Stone {
     @Column(name = "session_id")
     private String sessionId;
 
-    @Column(name = "create_at")
+    @Column(name = "created_at")
     private Instant createdAt;
 }
 

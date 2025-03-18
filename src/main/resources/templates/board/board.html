@@ -9,23 +9,89 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>오목판</title>
     <link rel="stylesheet" type="text/css" href="/board.style.css" />
+    <link rel="stylesheet" type="text/css" href="/stone.style.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- jQuery 사용 -->
   </head>
   <body>
-  <h1>Game ID: <span th:text="${gameId}">게임 ID</span></h1>
+    <h1>Game ID: <span th:text="${gameId}">게임 ID</span></h1>
     <table class="board">
+      <caption>
+        <strong>오목판</strong>
+      </caption>
       <tbody>
-        <!-- 2차원 배열 'board'의 각 행을 반복 -->
+        <!-- board 배열을 행단위로 반복 -->
         <tr th:each="row : ${board}">
-          <!-- 각 행의 각 칸을 반복 -->
-
           <td
             th:each="cell : ${row}"
-            th:text="${cell != null ? cell : ' '}"
+            th:text="${cell != null ? 'O' : ' '}"
+            class="board-cell"
           ></td>
         </tr>
       </tbody>
     </table>
+    <script>
+      var turn = 1;
+      document
+        .querySelector(".board")
+        .addEventListener("click", function (event) {
+          if (event.target.tagName !== "TD") return; // <td> 요소가 아닌 곳 클릭하면 무시
+
+          var td = event.target;
+
+          if (td.querySelector(".stone")) {
+            alert("이미 돌이 놓인 자리입니다!");
+            return;
+          }
+
+          var x = td.closest("tr").rowIndex;
+          var y = td.cellIndex;
+
+          var stoneRequest = {
+            x: x,
+            y: y,
+          };
+
+          fetch("/api/board/stone", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(stoneRequest),
+          })
+            .then((response) => {
+              if (response.ok) {
+                return response.text();
+              } else {
+                throw new Error("돌을 두는 데 실패했습니다.");
+              }
+            })
+            .then((data) => {
+              console.log(data); // 서버의 응답 메시지 출력
+
+              var color = turn % 2 === 0 ? "white" : "black";
+
+              var stone = document.createElement("div");
+              stone.classList.add("stone", color); // "black" 또는 "white"
+              // 교차로에 맞게 돌의 위치를 조정
+              // td의 크기와 위치를 가져옵니다
+              var tdRect = td.getBoundingClientRect();
+
+              stone.style.position = "absolute";
+              stone.style.left = "-10px"; // td의 좌측 상단에 위치
+              stone.style.top = "-10px"; // td의 상단에 위치
+
+              td.appendChild(stone);
+
+              turn++;
+
+              alert("돌이 성공적으로 놓였습니다.");
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("오류가 발생했습니다. 다시 시도해 주세요");
+            });
+        });
+    </script>
   </body>
 </html>

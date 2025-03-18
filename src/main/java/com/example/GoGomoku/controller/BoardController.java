@@ -51,7 +51,8 @@ public class BoardController {
     }
 
     @PostMapping("/board/stone")
-    public ResponseEntity<?> saveStone(@RequestBody StoneRequest stoneRequest, @RequestParam("gameId") Long gameId, HttpSession session) {
+    public ResponseEntity<?> saveStone(@RequestBody StoneRequest stoneRequest, HttpSession session) {
+        Long gameId = (Long) session.getAttribute("gameId");
         boardService.createStone(stoneRequest, gameId, session);
         return ResponseEntity.ok("오목돌을 생성했습니다.");
     }
