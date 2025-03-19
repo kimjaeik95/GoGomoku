@@ -1,10 +1,7 @@
 package com.example.GoGomoku.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -24,6 +21,7 @@ import java.time.Instant;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class Stone {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,5 +46,9 @@ public class Stone {
 
     @Column(name = "created_at")
     private Instant createdAt;
+
+    public String getBlackPlayer() {
+        return sessionId;
+    }
 }
 
