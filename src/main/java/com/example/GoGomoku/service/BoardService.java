@@ -57,7 +57,7 @@ public class BoardService {
     4.승리시 Game 세션아이디 , 게임상태를 Win 으로 저장해주는로직
      */
     @Transactional
-    public GameResult createStone(StoneRequest stoneRequest, Long gameId, HttpSession session) {
+    public GameResult createStoneGameResult(StoneRequest stoneRequest, Long gameId, HttpSession session) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
 
@@ -103,11 +103,8 @@ public class BoardService {
             game.updateDrawGame();
             gameRepository.save(game);
             return new GameResult(GameStatus.DRAW, "게임 무승부!!");
-        } else {
-            game.updateErrorGame();
-            gameRepository.save(game);
-            return new GameResult(GameStatus.ERROR_GAME_END, "의도치않은 게임 오류! 게임종료!");
         }
+         return new GameResult(GameStatus.IN_PROGRESS, "게임이 진행 중입니다.");
     }
 
 

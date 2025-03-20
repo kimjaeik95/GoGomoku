@@ -1,5 +1,6 @@
 package com.example.GoGomoku.controller;
 
+import com.example.GoGomoku.dto.GameResult;
 import com.example.GoGomoku.dto.StoneRequest;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.service.BoardService;
@@ -53,7 +54,7 @@ public class BoardController {
     @PostMapping("/board/stone")
     public ResponseEntity<?> saveStone(@RequestBody StoneRequest stoneRequest, HttpSession session) {
         Long gameId = (Long) session.getAttribute("gameId");
-        boardService.createStone(stoneRequest, gameId, session);
-        return ResponseEntity.ok("오목돌을 생성했습니다.");
+        GameResult gameResult = boardService.createStoneGameResult(stoneRequest, gameId, session);
+        return ResponseEntity.ok(gameResult);
     }
 }
