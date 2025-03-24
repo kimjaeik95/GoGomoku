@@ -42,8 +42,7 @@ public class BoardController {
     }
 
     @GetMapping("/game/board/view")
-    public String newBoard(HttpSession session, Model model) {
-        Long gameId = (Long)session.getAttribute("gameId");
+    public String newBoard(@RequestParam("gameId") Long gameId, Model model) {
         model.addAttribute("gameId", gameId);
 
         Stone[][] board = boardService.createBoard();
