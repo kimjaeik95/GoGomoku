@@ -51,10 +51,10 @@ public class BoardController {
         return "/board/board";
     }
 
-    @PostMapping("/board/stone")
-    public ResponseEntity<?> saveStone(@RequestBody StoneRequest stoneRequest, HttpSession session) {
-        Long gameId = (Long) session.getAttribute("gameId");
-        GameResult gameResult = boardService.createStoneGameResult(stoneRequest, gameId, session);
-        return ResponseEntity.ok(gameResult);
-    }
+//    @PostMapping("/board/stone")
+//    public ResponseEntity<?> saveStone(@RequestBody StoneRequest stoneRequest, HttpSession session) {
+//        Long gameId = (Long) session.getAttribute("gameId");
+//        GameResult gameResult = boardService.createStoneGameResult(stoneRequest, gameId, session);
+//        return ResponseEntity.ok(gameResult);
+//    }
 }

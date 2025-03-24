@@ -9,7 +9,6 @@ import com.example.GoGomoku.entity.GameStatus;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.repository.GameRepository;
 import com.example.GoGomoku.repository.StoneRepository;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,7 @@ public class BoardService {
     public Long createGame() {
         Game game = new Game();
         gameRepository.save(game);
+
         return game.getId();
     }
 
@@ -57,12 +57,12 @@ public class BoardService {
     4.승리시 Game 세션아이디 , 게임상태를 Win 으로 저장해주는로직
      */
     @Transactional
-    public GameResult createStoneGameResult(StoneRequest stoneRequest, Long gameId, HttpSession session) {
+    public GameResult createStoneGameResult(StoneRequest stoneRequest, Long gameId, String sessionId) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
 
         // 로그인 기능이 없으므로 sessionId로 흑/백 사용자 저장
-        String sessionId = session.getId();
+//        String sessionId = session.getId();
         // 게임에서 마지막 돌을 찾는다.
         int latestTurn = stoneRepository.findLatestTurnGameId(gameId);
         // 돌을생성할때마다 turn 증가
@@ -83,9 +83,9 @@ public class BoardService {
 //        }
 
         // 홀짝 턴 검사
-        if (newTurn % 2 == 0 && stone.getColor().equals("WHITE") && stone.getSessionId().equals(session.getId())) {
+        if (newTurn % 2 == 0 && stone.getColor().equals("WHITE") && stone.getSessionId().equals(sessionId)) {
             throw new IllegalArgumentException("짝수턴에 화이트 돌만 와야 합니다.");
-        } else if (newTurn % 2 != 0 && stone.getColor().equals("BLACK") && stone.getSessionId().equals(session.getId())) {
+        } else if (newTurn % 2 != 0 && stone.getColor().equals("BLACK") && stone.getSessionId().equals(sessionId)) {
             throw new IllegalArgumentException("홀수턴에는 블랙 돌만 와야 합니다.");
         }
         // 돌 저장
