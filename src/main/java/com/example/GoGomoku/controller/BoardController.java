@@ -1,15 +1,20 @@
 package com.example.GoGomoku.controller;
 
+import com.example.GoGomoku.dto.GameIdDto;
 import com.example.GoGomoku.dto.GameResult;
 import com.example.GoGomoku.dto.StoneRequest;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.service.BoardService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * packageName    : com.example.GoGomoku.controller
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Slf4j
 public class BoardController {
 
     private final BoardService boardService;
@@ -41,10 +47,20 @@ public class BoardController {
         return "redirect:/api/game/board/view";
     }
 
-    @GetMapping("/game/board/view")
-    public String newBoard(@RequestParam("gameId") Long gameId, Model model) {
-        model.addAttribute("gameId", gameId);
+    @PostMapping("/set/gameid")
+    public ResponseEntity<?> setGameId(@RequestBody GameIdDto gameIdDto, HttpSession session) {
+        Long gameId = gameIdDto.gameId();
+        session.setAttribute("gameId", gameId);
+        log.info("gameId saved in session: {}", gameId);
+        return ResponseEntity.ok().build();
+    }
 
+    @GetMapping("/game/board/view")
+    public String newBoard(HttpSession session, Model model) {
+        Long gameId = (Long) session.getAttribute("gameId");
+        log.info("Received gameId: {}", gameId);
+        model.addAttribute("gameId", gameId);
+        log.info("gameId : {}" , gameId);
         Stone[][] board = boardService.createBoard();
         model.addAttribute("board", board);
         return "/board/board";

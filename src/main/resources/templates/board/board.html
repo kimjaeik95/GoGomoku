@@ -12,6 +12,10 @@
     <link rel="stylesheet" type="text/css" href="/stone.style.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- jQuery 사용 -->
+    <!-- 먼저 STOMP를 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <!-- 그 후 SockJS를 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
   </head>
   <body>
     <h1>Game ID: <span th:text="${gameId}">게임 ID</span></h1>

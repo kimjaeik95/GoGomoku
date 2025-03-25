@@ -28,13 +28,20 @@
         };
 
         // 게임 시작 메시지를 받으면 처리
-        stompClient.subscribe("/topic/game/start", function (response) {
+        stompClient.subscribe("/topic/start/game", function (response) {
           const message = JSON.parse(response.body);
-          console.log(message);
-
-          // 게임이 시작되면 오목판 페이지로 이동
-          window.location.href = "/game/board/view?gameId=" + message.gameId;
           console.log(message.gameId);
+
+          fetch("/api/set/gameid", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ gameId: message.gameId }),
+          }).then(() => {
+            // 게임이 시작되면 오목판 페이지로 이동
+            window.location.href = "/api/game/board/view";
+          });
         });
       });
     </script>
