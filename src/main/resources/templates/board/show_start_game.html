@@ -24,10 +24,11 @@
         // 게임 시작 버튼 클릭 시 호출되는 함수
         document.getElementById("startButton").onclick = function () {
           // /pub/start/game 경로로 메시지를 보내 게임을 시작하도록 요청
+          // 아직 게임이 없기 때문에 게임생성 요청 Send 먼저
           stompClient.send("/pub/start/game", {}, JSON.stringify({}));
         };
 
-        // 게임 시작 메시지를 받으면 처리
+        // 게임이 생성된 이후의 게임 시작 메시지를 받으면 처리
         stompClient.subscribe("/topic/start/game", function (response) {
           const message = JSON.parse(response.body);
           console.log(message.gameId);

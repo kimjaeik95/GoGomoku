@@ -57,12 +57,13 @@ public class BoardService {
     4.승리시 Game 세션아이디 , 게임상태를 Win 으로 저장해주는로직
      */
     @Transactional
-    public GameResult createStoneGameResult(StoneRequest stoneRequest, Long gameId, String sessionId) {
+    public GameResult createStoneGameResult(StoneRequest stoneRequest) {
+        Long gameId = stoneRequest.gameId();
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
 
         // 로그인 기능이 없으므로 sessionId로 흑/백 사용자 저장
-//        String sessionId = session.getId();
+        String sessionId = stoneRequest.sessionId();
         // 게임에서 마지막 돌을 찾는다.
         int latestTurn = stoneRepository.findLatestTurnGameId(gameId);
         // 돌을생성할때마다 turn 증가
@@ -72,15 +73,13 @@ public class BoardService {
         // 색상 자동 할당 (홀짝 턴에 맞춰서 색상 지정)
         Color color = (newTurn % 2 == 0) ? Color.WHITE : Color.BLACK;
         // 엔 -Dto 변환
-        Stone stone = stoneRequest.toStoneEntity(game, color, newTurn, sessionId);
+        Stone stone = stoneRequest.toStoneEntity(game, color, newTurn);
         log.info("stoneRequest :{}", stone.toString());
 
         // 첫번째 턴에 흰돌 놓기 방지
-//        if (newTurn == 2) {
-//            if (stone.getBlackPlayer().equals(sessionId)) {
-//                throw new IllegalArgumentException("두번째 턴은 다른 플레이어가 놓아야합니다.");
+//        if (newTurn > 1 && stone.getBlackPlayer().equals(sessionId)) {
+//                throw new IllegalArgumentException("같은 턴은 다른 플레이어가 놓아야합니다.");
 //            }
-//        }
 
         // 홀짝 턴 검사
         if (newTurn % 2 == 0 && stone.getColor().equals("WHITE") && stone.getSessionId().equals(sessionId)) {
@@ -89,6 +88,7 @@ public class BoardService {
             throw new IllegalArgumentException("홀수턴에는 블랙 돌만 와야 합니다.");
         }
         // 돌 저장
+        log.info(" 돌 저장 시도: {}", stone);
         stoneRepository.save(stone);
 
         // 보드 상태 업데이트
@@ -98,13 +98,13 @@ public class BoardService {
         if (checkWinStone(stone)) {
             game.updateWinGame(sessionId);
             gameRepository.save(game);
-            return new GameResult(GameStatus.WIN, "게임 승리!!");
+            return new GameResult(GameStatus.WIN, stone.getColor(), "게임 승리!!" );
         } else if (checkDrawStone(stone)) {
             game.updateDrawGame();
             gameRepository.save(game);
-            return new GameResult(GameStatus.DRAW, "게임 무승부!!");
+            return new GameResult(GameStatus.DRAW, null,"게임 무승부!!");
         }
-         return new GameResult(GameStatus.IN_PROGRESS, "게임이 진행 중입니다.");
+         return new GameResult(GameStatus.IN_PROGRESS, null, "게임이 진행 중입니다.");
     }
 
 

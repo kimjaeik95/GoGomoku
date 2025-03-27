@@ -1,6 +1,9 @@
 package com.example.GoGomoku.dto;
 
+import com.example.GoGomoku.entity.Color;
 import com.example.GoGomoku.entity.GameStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 
 /**
  * packageName    : com.example.GoGomoku.dto
@@ -15,6 +18,9 @@ import com.example.GoGomoku.entity.GameStatus;
  */
 public record GameResult(
         GameStatus gameStatus,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        Color stoneColor,
         String message
+
 ) {
 }

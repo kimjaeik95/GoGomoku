@@ -40,13 +40,6 @@ public class BoardController {
         return "/board/show_start_game";
     }
 
-    @PostMapping("/game/start")
-    public String newGame(HttpSession session) {
-        Long gameId = boardService.createGame();
-        session.setAttribute("gameId", gameId);
-        return "redirect:/api/game/board/view";
-    }
-
     @PostMapping("/set/gameid")
     public ResponseEntity<?> setGameId(@RequestBody GameIdDto gameIdDto, HttpSession session) {
         Long gameId = gameIdDto.gameId();
@@ -65,6 +58,14 @@ public class BoardController {
         model.addAttribute("board", board);
         return "/board/board";
     }
+    // 주석처리한곳은 양방향 통신을 위해 불 필요한 restful API
+
+//    @PostMapping("/game/start")
+//    public String newGame(HttpSession session) {
+//        Long gameId = boardService.createGame();
+//        session.setAttribute("gameId", gameId);
+//        return "redirect:/api/game/board/view";
+//    }
 
 //    @PostMapping("/board/stone")
 //    public ResponseEntity<?> saveStone(@RequestBody StoneRequest stoneRequest, HttpSession session) {

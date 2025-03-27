@@ -1,10 +1,9 @@
 package com.example.GoGomoku.dto;
 
 import com.example.GoGomoku.entity.GameStatus;
-import com.example.GoGomoku.entity.Stone;
+
 
 import java.time.Instant;
-import java.util.List;
 
 /**
  * packageName    : com.example.GoGomoku.dto

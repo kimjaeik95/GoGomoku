@@ -2,7 +2,6 @@ package com.example.GoGomoku.dto;
 
 import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.GameStatus;
-import lombok.Builder;
 
 import java.time.Instant;
 
