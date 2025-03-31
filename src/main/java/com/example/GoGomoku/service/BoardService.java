@@ -76,10 +76,10 @@ public class BoardService {
         Stone stone = stoneRequest.toStoneEntity(game, color, newTurn);
         log.info("stoneRequest :{}", stone.toString());
 
-        // 첫번째 턴에 흰돌 놓기 방지
-//        if (newTurn > 1 && stone.getBlackPlayer().equals(sessionId)) {
-//                throw new IllegalArgumentException("같은 턴은 다른 플레이어가 놓아야합니다.");
-//            }
+     //    첫번째 턴에 흰돌 놓기 방지
+        if (newTurn > 1 && stone.getBlackPlayer().equals(sessionId)) {
+                throw new IllegalArgumentException("같은 턴은 다른 플레이어가 놓아야합니다.");
+            }
 
         // 홀짝 턴 검사
         if (newTurn % 2 == 0 && stone.getColor().equals("WHITE") && stone.getSessionId().equals(sessionId)) {

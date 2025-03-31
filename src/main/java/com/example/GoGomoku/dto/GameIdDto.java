@@ -12,7 +12,10 @@ package com.example.GoGomoku.dto;
  * 3/22/25       JAEIK       최초 생성
  */
 public record GameIdDto(
-        Long gameId
+        Long gameId,
+        String startGameStatus,
+        String playerSessionId,
+        int waitingPlayers
 
 ){
 }

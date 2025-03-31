@@ -58,6 +58,8 @@ public class BoardController {
         model.addAttribute("board", board);
         return "/board/board";
     }
+
+
     // 주석처리한곳은 양방향 통신을 위해 불 필요한 restful API
 
 //    @PostMapping("/game/start")

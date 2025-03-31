@@ -2,6 +2,7 @@ package com.example.GoGomoku.websocket.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -24,14 +25,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
        registry.addEndpoint("/api/ws-stomp")
                .setAllowedOriginPatterns("*")
+               .setHandshakeHandler(new CustomHandshakeHandler())
                .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // 서버가 구독자들에게 메시지 전달
-        registry.enableSimpleBroker("/topic");
-
+        registry.enableSimpleBroker("/topic", "/queue");
+        // user 전달  1:1 을 위해
+        registry.setUserDestinationPrefix("/user");
         // 클라이언트 /pub  경로로 메시지 보낸다.
         registry.setApplicationDestinationPrefixes("/pub");
     }
