@@ -10,8 +10,13 @@
     <title>오목판</title>
     <link rel="stylesheet" type="text/css" href="/board.style.css" />
     <link rel="stylesheet" type="text/css" href="/stone.style.css" />
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- jQuery 사용 -->
+    <!-- 먼저 STOMP를 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <!-- 그 후 SockJS를 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
   </head>
   <body>
     <h1>Game ID: <span th:text="${gameId}">게임 ID</span></h1>
@@ -31,10 +36,34 @@
       </tbody>
     </table>
     <script>
+      const socket = new SockJS("/api/ws-stomp");
+      const clientSocket = Stomp.over(socket);
+      let gameId = [[${gameId}]];  // 서버에서 gameId를 전달받는 코드
       var turn = 1;
-      document
-        .querySelector(".board")
-        .addEventListener("click", function (event) {
+
+      clientSocket.connect({}, function (frame) {
+        console.log("Connected: " + frame);
+        const sessionId = frame.headers["user-name"]; // 서버에서 전달한 user-name 값을 사용
+
+        // 먼저 구독을 설정해 서버로부터 게임 상태 변화를 받도록 준비
+        clientSocket.subscribe("/topic/start/game/" + gameId, function (response) {
+          const data = JSON.parse(response.body);
+          console.log(data);
+
+          // stoneRequest 정보
+          const stoneRequest = data.stoneRequest;
+          console.log("돌 정보:", stoneRequest);
+
+          // gameResult 정보
+          const gameResult = data.gameResult;
+          console.log("게임 결과:", gameResult);
+
+          // 돌을 게임판에 놓는 함수 호출
+          placeStone(stoneRequest.x, stoneRequest.y, turn, gameResult.gameStatus, gameResult.message, gameResult.stoneColor);
+      });
+
+        // 게임판 클릭 시, 돌을 놓는 로직
+        document.querySelector(".board").addEventListener("click", function (event) {
           if (event.target.tagName !== "TD") return; // <td> 요소가 아닌 곳 클릭하면 무시
 
           var td = event.target;
@@ -50,44 +79,48 @@
           var stoneRequest = {
             x: x,
             y: y,
+            gameId: gameId,
+            sessionId: sessionId
           };
 
-          fetch("/api/board/stone", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(stoneRequest),
-          })
-            .then((response) => response.json())
-            .then((gameResult) => {
-              var color = turn % 2 === 0 ? "white" : "black";
-
-              var stone = document.createElement("div");
-              stone.classList.add("stone", color); // "black" 또는 "white"
-              // 교차로에 맞게 돌의 위치를 조정
-              // td의 크기와 위치를 가져옵니다
-              var tdRect = td.getBoundingClientRect();
-
-              stone.style.position = "absolute";
-              stone.style.left = "-10px"; // td의 좌측 상단에 위치
-              stone.style.top = "-10px"; // td의 상단에 위치
-
-              td.appendChild(stone);
-
-              if (gameResult.gameStatus === "WIN") {
-                alert("게임 승리!!");
-              } else if (gameResult.gameStatus === "DRAW") {
-                alert("게임 무승부!!");
-              }
-
-              turn++;
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("오류가 발생했습니다. 다시 시도해 주세요");
-            });
+          // send() 메서드 호출 후 예외 처리: try-catch 사용
+          try {
+            clientSocket.send("/pub/game/stone/save", {}, JSON.stringify(stoneRequest));
+          } catch (error) {
+            console.error("Error:", error);
+            alert("오류가 발생했습니다. 다시 시도해 주세요");
+          }
         });
+      });
+
+      // 돌을 게임판에 놓는 함수
+      function placeStone(x, y, turn, gameStatus, message, stoneColor) {
+        var td = document.querySelector(".board").rows[x].cells[y];
+
+        if (!td.querySelector(".stone")) {
+          console.log("Placing stone at:", x, y, "Turn:", turn);  // 로그로 확인
+          var color = turn % 2 === 0 ? "white" : "black";
+
+          var stone = document.createElement("div");
+          stone.classList.add("stone", color); // "black" 또는 "white"
+
+          // td의 크기와 위치를 가져옵니다
+          var tdRect = td.getBoundingClientRect();
+          stone.style.position = "absolute";
+          stone.style.left = "-10px"; // td의 좌측 상단에 위치
+          stone.style.top = "-10px"; // td의 상단에 위치
+
+          td.appendChild(stone);
+
+          if (gameStatus === "WIN") {
+            alert(stoneColor +'돌 '+ message);
+          } else if (gameStatus === "DRAW") {
+            alert(message);
+          }
+
+          window.turn++;
+        }
+      }
     </script>
   </body>
 </html>

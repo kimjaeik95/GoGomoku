@@ -1,14 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>게임 시작</title>
-</head>
-<body>
-<h1>오목 게임</h1>
+    <script src="https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/umd/uuid.min.js"></script>
+    <!-- 먼저 STOMP를 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <!-- 그 후 SockJS를 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+  </head>
+  <body>
+    <h1>오목 게임</h1>
 
-<form action="/api/game/start" method="post">
-    <button type="submit">게임 시작</button>
-</form>
-</body>
+    <button id="startButton">게임시작</button>
+
+    <div id="gameStart"></div>
+
+    <div id="waitingPlayers"></div>
+
+    <script>
+      const socket = new SockJS("/api/ws-stomp");
+      const clientSocket = Stomp.over(socket);
+
+      // WebSocket 연결을 설정하고, 연결이 완료되면 콜백 함수 실행
+      clientSocket.connect({}, function (frame) {
+        console.log("Connected: " + frame);
+        // 연결된 후, user-name 헤더에서 UUID를 가져옴
+        const sessionId = frame.headers["user-name"]; // 서버에서 전달한 user-name 값을 사용
+        window.sessionId = sessionId; // 클라이언트 측에서 세션 ID를 저장하여 이후 사용
+        console.log("sessionId: ", sessionId); // 클라이언트 측에서 sessionId 확인
+
+        // 게임 시작 버튼 클릭 시 호출되는 함수
+        document.getElementById("startButton").onclick = function () {
+          // /pub/start/game 경로로 메시지를 보내 게임을 시작하도록 요청
+          // 아직 게임이 없기 때문에 게임생성 요청 Send 먼저
+          clientSocket.send("/pub/start/game", {}, JSON.stringify({}));
+        };
+
+        // 게임이 생성된 이후의 게임 시작 메시지를 받으면 처리
+        clientSocket.subscribe("/topic/start/game", function (response) {
+          const message = JSON.parse(response.body);
+          console.log(
+            message.gameId,
+            message.startGameStatus,
+            message.waitingPlayers,
+            message.playerSessionId
+          );
+
+          if (message.startGameStatus === "대기중") {
+            document.getElementById("gameStart").innerText = "대기 중입니다...";
+            document.getElementById(
+              "waitingPlayers"
+            ).innerText = `대기 중인 인원: ${message.waitingPlayers}명`;
+          }
+
+          // 대기 인원이 2명이 되면 게임 시작
+          if (message.waitingPlayers >= 2) {
+            // 대기 인원이 2명이 되면 게임 시작을 가능하게 표시
+            document.getElementById("gameStart").innerText =
+              "게임 시작 준비 완료!";
+          }
+
+          console.log("window.sessinId", window.sessionId);
+
+          clientSocket.subscribe(
+            "/user/queue/start/game",
+            function (response2) {
+              console.log("✅ 게임 시작 메시지를 수신 시도 중...");
+              console.log("받은 메시지:", response2.body);
+              const message2 = JSON.parse(response2.body);
+              console.log(
+                "두명 게임 시작 메시지:",
+                message2.startGameStatus,
+                message2.gameId,
+                message2.playerSessionId,
+                message2.waitingPlayers,
+                message2.messageHeaders
+              );
+              // 게임 시작 상태
+              if (message2.startGameStatus === "게임시작") {
+                fetch("/api/set/gameid", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ gameId: message2.gameId }),
+                }).then(() => {
+                  // 게임이 시작되면 오목판 페이지로 이동
+                  window.location.href = "/api/game/board/view";
+                });
+              } else {
+                console.log("게임 시작 상태가 아님", message2.startGameStatus);
+              }
+            }
+          );
+        });
+      });
+    </script>
+  </body>
 </html>

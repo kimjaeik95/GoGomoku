@@ -3,7 +3,6 @@ package com.example.GoGomoku.dto;
 import com.example.GoGomoku.entity.Color;
 import com.example.GoGomoku.entity.Game;
 import com.example.GoGomoku.entity.Stone;
-import jakarta.servlet.http.HttpSession;
 
 import java.time.Instant;
 
@@ -20,16 +19,18 @@ import java.time.Instant;
  */
 public record StoneRequest(
         Integer x,
-        Integer y
+        Integer y,
+        Long gameId,
+        String sessionId
 ) {
-    public Stone toStoneEntity(Game game,Color color, int newTurn, String sessionId) {
+    public Stone toStoneEntity(Game game,Color color, int newTurn) {
         return Stone.builder()
                 .game(game)
-                .x(x)
-                .y(y)
+                .x(this.x)
+                .y(this.y)
                 .color(color)
                 .turn(newTurn)
-                .sessionId(sessionId)
+                .sessionId(this.sessionId)
                 .createdAt(Instant.now())
                 .build();
     }

@@ -9,11 +9,12 @@ import com.example.GoGomoku.entity.GameStatus;
 import com.example.GoGomoku.entity.Stone;
 import com.example.GoGomoku.repository.GameRepository;
 import com.example.GoGomoku.repository.StoneRepository;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 /**
@@ -39,6 +40,7 @@ public class BoardService {
     public Long createGame() {
         Game game = new Game();
         gameRepository.save(game);
+
         return game.getId();
     }
 
@@ -57,12 +59,13 @@ public class BoardService {
     4.승리시 Game 세션아이디 , 게임상태를 Win 으로 저장해주는로직
      */
     @Transactional
-    public GameResult createStoneGameResult(StoneRequest stoneRequest, Long gameId, HttpSession session) {
+    public GameResult createStoneGameResult(StoneRequest stoneRequest) {
+        Long gameId = stoneRequest.gameId();
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
 
         // 로그인 기능이 없으므로 sessionId로 흑/백 사용자 저장
-        String sessionId = session.getId();
+        String sessionId = stoneRequest.sessionId();
         // 게임에서 마지막 돌을 찾는다.
         int latestTurn = stoneRepository.findLatestTurnGameId(gameId);
         // 돌을생성할때마다 turn 증가
@@ -72,23 +75,34 @@ public class BoardService {
         // 색상 자동 할당 (홀짝 턴에 맞춰서 색상 지정)
         Color color = (newTurn % 2 == 0) ? Color.WHITE : Color.BLACK;
         // 엔 -Dto 변환
-        Stone stone = stoneRequest.toStoneEntity(game, color, newTurn, sessionId);
+        Stone stone = stoneRequest.toStoneEntity(game, color, newTurn);
         log.info("stoneRequest :{}", stone.toString());
 
-        // 첫번째 턴에 흰돌 놓기 방지
-//        if (newTurn == 2) {
-//            if (stone.getBlackPlayer().equals(sessionId)) {
-//                throw new IllegalArgumentException("두번째 턴은 다른 플레이어가 놓아야합니다.");
-//            }
-//        }
+        // gameId ,turn 을 조회해  한턴에 돌하나기 때문에  List.size 1개일것이다.
+        List<Stone> stonesInTurn = stoneRepository.findStonesByGameIdAndTurn(gameId, latestTurn);
+
+        /* 첫스타트는 latestTurn 0이며  블랙돌이 저장되지 않았으므로 size 0 == 1  false 이므로 아래로직
+           두번째 플레이어가 돌을두면  latestTurn 1 이며 이미 블랙돌이 존재함 get(0)인덱스 세션아이디 비교로 세션이다르면
+           화이트 돌을 생성할 수 있음  이전 latestTurn 플레이어가 두번 두는걸 방지
+           처음 빼고 stonesInTurn.size() 계속 size 1 상태  그 뒤 세션추가적으로 확인
+        */
+        if (stonesInTurn.size() == 1) {
+            // 첫 번째 플레이어가 이미 돌을 놓았으면, 두 번째 플레이어가 이 턴에 돌을 놓을 수 있어야 한다.
+            Stone firstStone = stonesInTurn.get(0);
+            if (firstStone.getSessionId().equals(sessionId)) {
+                throw new IllegalArgumentException("당신은 이미 이번 턴에 돌을 놓았습니다.");
+            }
+        }
 
         // 홀짝 턴 검사
-        if (newTurn % 2 == 0 && stone.getColor().equals("WHITE") && stone.getSessionId().equals(session.getId())) {
+        if (newTurn % 2 == 0 && stone.getColor() != Color.WHITE) {
             throw new IllegalArgumentException("짝수턴에 화이트 돌만 와야 합니다.");
-        } else if (newTurn % 2 != 0 && stone.getColor().equals("BLACK") && stone.getSessionId().equals(session.getId())) {
+        } else if (newTurn % 2 != 0 && stone.getColor() != Color.BLACK) { // enum 스트링값이 아니라 비교는 ==,equals X
             throw new IllegalArgumentException("홀수턴에는 블랙 돌만 와야 합니다.");
         }
+
         // 돌 저장
+        log.info(" 돌 저장 시도: {}", stone);
         stoneRepository.save(stone);
 
         // 보드 상태 업데이트
@@ -98,13 +112,13 @@ public class BoardService {
         if (checkWinStone(stone)) {
             game.updateWinGame(sessionId);
             gameRepository.save(game);
-            return new GameResult(GameStatus.WIN, "게임 승리!!");
+            return new GameResult(GameStatus.WIN, stone.getColor(), "게임 승리!!");
         } else if (checkDrawStone(stone)) {
             game.updateDrawGame();
             gameRepository.save(game);
-            return new GameResult(GameStatus.DRAW, "게임 무승부!!");
+            return new GameResult(GameStatus.DRAW, null, "게임 무승부!!");
         }
-         return new GameResult(GameStatus.IN_PROGRESS, "게임이 진행 중입니다.");
+        return new GameResult(GameStatus.IN_PROGRESS, null, "게임이 진행 중입니다.");
     }
 
 
@@ -160,8 +174,8 @@ public class BoardService {
          log.info("Starting count: {}", count);
 
          for (int i = 1; i < 5; i++) {
-             int nextX = x + i * dx;  // 1 + 1 * 1
-             int nextY = y + i * dy;  // 1 + 1 * 1
+             int nextX = x + i * dx;  // 1 + 1 * 1    3  +  3 *  -1      2  1  0
+             int nextY = y + i * dy;  // 1 + 1 * 1    9  +  1 *   0      9  0
 
              if (nextX < 0 || nextX >= 15 || nextY < 0 || nextY >= 15
                      || board[nextX][nextY] == null

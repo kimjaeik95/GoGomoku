@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * packageName    : com.example.GoGomoku.repository
  * fileName       : StoneRepository
@@ -23,4 +25,6 @@ public interface StoneRepository extends JpaRepository<Stone, Long> {
     int findLatestTurnGameId(@Param("gameId") Long gameId);
 
     boolean existsByGameIdAndXAndY(Long gameId, int x, int y);
+
+    List<Stone> findStonesByGameIdAndTurn(Long gameId, int turn);
 }
