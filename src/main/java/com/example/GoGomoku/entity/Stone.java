@@ -50,5 +50,7 @@ public class Stone {
     public String getBlackPlayer() {
         return sessionId;
     }
+
+
 }
 
